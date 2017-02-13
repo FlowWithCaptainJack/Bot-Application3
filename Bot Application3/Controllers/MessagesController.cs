@@ -45,12 +45,13 @@ namespace Bot
             }
             else if (message.Type == ActivityTypes.ConversationUpdate)
             {
-                if (message.MembersAdded?.Count(m => !m.Name.ToLower().Contains("bot")) > 0)
+                if (message.MembersAdded?.Count(m => m.Name.ToLower().Contains("bot")) > 0)
                 {
                     ConnectorClient connector = new ConnectorClient(new Uri(message.ServiceUrl));
                     var result = message.CreateReply(InnerData.dic["0"]);
                     await connector.Conversations.ReplyToActivityAsync(result);
                 }
+
             }
             else if (message.Type == ActivityTypes.ContactRelationUpdate)
             {
