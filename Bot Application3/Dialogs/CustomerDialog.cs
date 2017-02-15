@@ -18,12 +18,6 @@ namespace Bot_Application3.Dialogs
             {
                 //send to customerServer(customerRole)
                 var map = CustomerServer.mapping.FirstOrDefault(m => m.Key.UserId == message.From.Id);
-                if (message.Text.ToLower() == "#exit#")
-                {
-                    CustomerServer.mapping.Remove(map.Key);
-                    context.Wait(MessageReceivedAsync);
-                    return;
-                }
                 var customerServer = map.Value;
                 string serviceUrl = customerServer.ServiceUrl;
                 var userAccount = new ChannelAccount(id: customerServer.UserId, name: customerServer.Name);
