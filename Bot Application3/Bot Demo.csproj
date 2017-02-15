@@ -122,11 +122,10 @@
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Controllers\WechatController.cs" />
     <Compile Include="Dialogs\BaseDialog.cs" />
+    <Compile Include="Dialogs\CustomerDialog.cs" />
+    <Compile Include="Dialogs\CustomerServiceDialog.cs" />
     <Compile Include="Dialogs\EchoDialog.cs" />
     <Compile Include="Dialogs\LuisDialog.cs" />
-    <Compile Include="Dialogs\SkypeDialog.cs" />
-    <Compile Include="Dialogs\WebchatDialog.cs" />
-    <Compile Include="Dialogs\WechatDialog.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

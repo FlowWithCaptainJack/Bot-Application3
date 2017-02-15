@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bot_Application3.model;
@@ -9,20 +8,12 @@ using Microsoft.Bot.Connector;
 
 namespace Bot_Application3.Dialogs
 {
-    [Serializable]
-    public class WechatDialog : BaseDialog
+    public class CustomerDialog : BaseDialog
     {
-        public override async Task StartAsync(IDialogContext context)
-        {
-            context.Wait(MessageReceivedAsync);
-        }
         public override async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             var message = await argument as Activity;
-            if (Customer.Customers.Count(m => m.UserId == message.From.Id) < 1)
-            {
-                Customer.Customers.Add(new Customer(message.Conversation.Id, message.From.Id, message.From.Name, message.Recipient.Name, message.Recipient.Id, message.ServiceUrl));
-            }
+            //chat with customerService
             if (CustomerServer.mapping.Count(m => m.Key.UserId == message.From.Id) > 0)
             {
                 //send to customerServer(customerRole)
@@ -42,6 +33,7 @@ namespace Bot_Application3.Dialogs
                 context.Wait(MessageReceivedAsync);
                 return;
             }
+            //connect to customerService
             if (message.Text == "9")
             {
                 var busyIds = CustomerServer.mapping.Select(m => m.Value.UserId);
@@ -63,7 +55,7 @@ namespace Bot_Application3.Dialogs
                 context.Wait(MessageReceivedAsync);
                 return;
             }
-
+            //chat with cleverbot
             if (!InnerData.dic.ContainsKey(message.Text))
             {
                 await context.Forward(new LuisDialog(), ResumeAfterDialog, message, CancellationToken.None);
@@ -74,6 +66,5 @@ namespace Bot_Application3.Dialogs
             }
             context.Wait(MessageReceivedAsync);
         }
-
     }
 }

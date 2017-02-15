@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -7,12 +8,14 @@ using Bot_Application3.Dialogs;
 using Bot_Application3.model;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using Newtonsoft.Json;
 
 namespace Bot
 {
     [BotAuthentication]
     public class MessagesController : ApiController
     {
+        static Queue<string> messages = new Queue<string>();
         /// <summary>
         /// POST: api/Messages
         /// Receive a message from a user and reply to it
@@ -21,13 +24,49 @@ namespace Bot
         {
             if (activity != null && activity.GetActivityType() == ActivityTypes.Message)
             {
-                switch (activity.ChannelId.ToLower())
+                //filter repeated messages
+                if (messages.Count > 1000)
                 {
-                    case "directline": await Conversation.SendAsync(activity, () => new WechatDialog()); break;
-                    case "skype": await Conversation.SendAsync(activity, () => new SkypeDialog()); break;
-                    case "webchat": await Conversation.SendAsync(activity, () => new WebchatDialog()); break;
-                    default:
-                        break;
+                    messages.Dequeue();
+                }
+                if (messages.Contains(activity.From.Id + activity.Id))
+                {
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+                }
+                messages.Enqueue(activity.From.Id + activity.Id);
+
+                //register for a customerService?
+                if (activity.Text == "i am a superman")
+                {
+                    if (CustomerServer.servers.Count(m => m.UserId == activity.From.Id) > 0)
+                    {
+                        return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+                    }
+                    if (Customer.Customers.Count(m => m.UserId == activity.From.Id) > 0)
+                    {
+                        Customer.Customers.RemoveAt(Customer.Customers.FindIndex(m => m.UserId == activity.From.Id));
+                    }
+                    CustomerServer.servers.Add(new CustomerServer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
+                    ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+                    var result = activity.CreateReply($"successfully that  you are a superman!!! details:{JsonConvert.SerializeObject(activity)}");
+                    await connector.Conversations.ReplyToActivityAsync(result);
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+                }
+
+                //register for a customer(default)
+                if (CustomerServer.servers.Count(m => m.UserId == activity.From.Id) < 1 && Customer.Customers.Count(m => m.UserId == activity.From.Id) < 1)
+                {
+                    Customer.Customers.Add(new Customer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
+                }
+
+                //switch to 2 workflows(customer/customerService)
+                if (Customer.Customers.Count(m => m.UserId == activity.From.Id) > 0)
+                {
+                    await Conversation.SendAsync(activity, () => new CustomerDialog());
+                }
+                else
+                {
+                    await Conversation.SendAsync(activity, () => new CustomerServiceDialog());
                 }
             }
             else
@@ -45,13 +84,12 @@ namespace Bot
             }
             else if (message.Type == ActivityTypes.ConversationUpdate)
             {
-                if (message.MembersAdded?.Count(m => m.Name.ToLower().Contains("bot")) > 0)
+                if (message.MembersAdded?.Count() > 0 && message.MembersAdded.Count(m => !m.Name.ToLower().Contains("bot")) > 0)
                 {
                     ConnectorClient connector = new ConnectorClient(new Uri(message.ServiceUrl));
                     var result = message.CreateReply(InnerData.dic["0"]);
                     await connector.Conversations.ReplyToActivityAsync(result);
                 }
-
             }
             else if (message.Type == ActivityTypes.ContactRelationUpdate)
             {

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -24,7 +25,7 @@ namespace Bot_ApplicationDemo.Controllers
 
         static WechatController()
         {
-            Task.Run(RecieveActivities);
+            ThreadPool.QueueUserWorkItem(RecieveActivities);
         }
         // GET: Wechat
         public HttpResponseMessage Get(string echostr, string msg_signature, string timestamp, string nonce)
@@ -62,38 +63,43 @@ namespace Bot_ApplicationDemo.Controllers
             }
             wechatMessage.Enqueue(weMsg.UserOpenId + weMsg.MessageId);
             string conversationId = "";
+
             if (weMsg.MessageType == MessageType.Event && weMsg.EventType == EventType.Subscribe)
             {
-                conversationId = await BotUtil.StartConversation();
-                userConversation.Add(weMsg.UserOpenId, new Conversation { id = conversationId, watermark = null });
+                if (userConversation.ContainsKey(weMsg.UserOpenId))
+                {
+                    conversationId = userConversation.FirstOrDefault(m => m.Key == weMsg.UserOpenId).Value.id;
+                }
+                else
+                {
+                    conversationId = await BotUtil.StartConversation();
+                    userConversation.Add(weMsg.UserOpenId, new Conversation { id = conversationId, watermark = null });
+                }
                 return;
             }
-            //ensure  conversation 
-            if (userConversation.ContainsKey(weMsg.UserOpenId))
-            {
-                conversationId = userConversation.FirstOrDefault(m => m.Key == weMsg.UserOpenId).Value.id;
-            }
-            else
-            {
-                conversationId = await BotUtil.StartConversation();
-                userConversation.Add(weMsg.UserOpenId, new Conversation { id = conversationId, watermark = null });
-            }
-            if (weMsg.EventType == EventType.Subscribe)
-            {
-                await BotUtil.SendActivity(conversationId, weMsg.UserOpenId, await Wechat.GetUserName(weMsg.UserOpenId), "hello");
-            }
+
             if (weMsg.MessageType == MessageType.Text)
             {
+                if (userConversation.ContainsKey(weMsg.UserOpenId))
+                {
+                    conversationId = userConversation.FirstOrDefault(m => m.Key == weMsg.UserOpenId).Value.id;
+                }
+                else
+                {
+                    conversationId = await BotUtil.StartConversation();
+                    userConversation.Add(weMsg.UserOpenId, new Conversation { id = conversationId, watermark = null });
+                }
                 //SendActivity 
                 string replyid = await BotUtil.SendActivity(conversationId, weMsg.UserOpenId, await Wechat.GetUserName(weMsg.UserOpenId), weMsg.Content);
             }
         }
 
-        private static async Task RecieveActivities()
+        private static async void RecieveActivities(object o)
         {
             while (true)
             {
-                foreach (var item in userConversation)
+                var temp = userConversation.Where(m => true);
+                foreach (var item in temp)
                 {
                     var botactivity = await BotUtil.GetActivites(item.Value.id, item.Value.watermark);
                     if (botactivity?.activities?.Count(m => m.from.id != item.Key) > 0)
@@ -106,7 +112,7 @@ namespace Bot_ApplicationDemo.Controllers
                         }
                     }
                 }
-                if (userConversation.Count() < 1)
+                if (temp.Count() < 1)
                 {
                     await Task.Delay(1000);
                 }
