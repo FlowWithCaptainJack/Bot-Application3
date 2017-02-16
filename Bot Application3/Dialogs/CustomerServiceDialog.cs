@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Bot_Application3.model;
 using Microsoft.Bot.Builder.Dialogs;
@@ -6,6 +7,7 @@ using Microsoft.Bot.Connector;
 
 namespace Bot_Application3.Dialogs
 {
+    [Serializable]
     class CustomerServiceDialog : BaseDialog
     {
         public override async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)

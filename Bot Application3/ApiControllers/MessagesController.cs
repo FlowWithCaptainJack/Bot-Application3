@@ -10,7 +10,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 
-namespace Bot
+namespace Bot_ApplicationDemo.ApiControllers
 {
     [BotAuthentication]
     public class MessagesController : ApiController

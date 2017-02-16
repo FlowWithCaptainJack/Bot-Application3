@@ -14,7 +14,7 @@ using BotApplicationDemo.model;
 using BotApplicationDemo.Utilities;
 using Tencent;
 
-namespace Bot_ApplicationDemo.Controllers
+namespace Bot_ApplicationDemo.ApiControllers
 {
 
     public class WechatController : ApiController
@@ -119,10 +119,12 @@ namespace Bot_ApplicationDemo.Controllers
             }
 
         }
+
+        class Conversation
+        {
+            public string id { get; set; }
+            public string watermark { get; set; }
+        }
     }
-    class Conversation
-    {
-        public string id { get; set; }
-        public string watermark { get; set; }
-    }
+
 }

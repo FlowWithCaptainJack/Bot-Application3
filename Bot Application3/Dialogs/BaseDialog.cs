@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Bot_Application3.model;
 using BotApplicationDemo.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
@@ -6,6 +7,7 @@ using Microsoft.Bot.Connector;
 
 namespace Bot_Application3.Dialogs
 {
+    [Serializable]
     public abstract class BaseDialog : IDialog<object>
     {
         public virtual async Task StartAsync(IDialogContext context)

@@ -17,7 +17,8 @@ namespace Bot_Application3.Dialogs
         {
             var message = await argument as Activity;
             await context.PostAsync(InnerData.dic.ContainsKey(message.Text) ? InnerData.dic[message.Text] : message.Text);
-            context.Wait(MessageReceivedAsync);
+            //context.Wait(MessageReceivedAsync);
+            context.Done(1);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bot_Application3.model;
@@ -8,6 +9,7 @@ using Microsoft.Bot.Connector;
 
 namespace Bot_Application3.Dialogs
 {
+    [Serializable]
     public class CustomerDialog : BaseDialog
     {
         public override async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
@@ -52,13 +54,12 @@ namespace Bot_Application3.Dialogs
             //chat with cleverbot
             if (!InnerData.dic.ContainsKey(message.Text))
             {
-                await context.Forward(new LuisDialog(), ResumeAfterDialog, message, CancellationToken.None);
+                await context.Forward(new CleverBotDialog(), ResumeAfterDialog, message, CancellationToken.None);
             }
             else
             {
                 await context.Forward(new EchoDialog(), ResumeAfterDialog, message, CancellationToken.None);
             }
-            context.Wait(MessageReceivedAsync);
         }
     }
 }
