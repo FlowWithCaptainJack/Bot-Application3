@@ -21,7 +21,6 @@ namespace Bot.Dialogs
             {
                 string conversationId = await BotUtil.StartConversation();
                 await BotUtil.SendActivity(conversationId, "admin" + user.UserId, "admin", "regist admin server");
-                Admin.mapping.Add(user, new Admin(conversationId, "admin" + user.UserId, "admin", "botdemollm", "botdemollm@pcz91rOW0-c", "https://directline.botframework.com/"));
             }
             // chat with admin?
             if (!user.BotEnabled)

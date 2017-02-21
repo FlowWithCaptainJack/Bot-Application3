@@ -36,19 +36,13 @@
         });
     }
     function sendMessage() {
-        var customerId = $(userInfo).attr("customerId");
         $.ajax({
             type: "POST",
             url: "/admin",
-            data: "customerId=" + $(userInfo).attr("customerId") + "&watermark=" + $(userInfo).attr("watermark"),
+            data: "customerId=" + $("#test").attr("customerId") + "&content=" + $("#message").val(),
             dataType: "json",
             success: function (msg) {
-                $(userInfo).attr("watermark", msg.watermark);
-                for (var i = 0; i < msg.activities.length; i++) {
-                    var activity = msg.activities[i];
-                    var flag = customerId == activity.from.id;
-                    $("#chatRoom").append("<div style='float:" + activity ? "left" : "right" + "'>" + activity.text + "</div>");
-                }
+                $("#chatRoom").append("<div style='float:" + (activity ? "left" : "right" )+ "'>" + $("#message").val() + "</div>");
             }
 
         });
@@ -64,7 +58,7 @@
         <h1>Admin.mapping @JsonConvert.SerializeObject(Admin.mapping)</h1>
         foreach (var item in ViewData["mapping"] as Dictionary<Customer, CustomerServer>)
         {
-            <h1 onclick="loadChat(this)" customerId="@item.Key.UserId" watermark="">@item.Key.Name</h1>
+            <h1 id="test" onclick="loadChat(this)" customerId="@item.Key.UserId" watermark="">@item.Key.Name</h1>
         }
     }
 </div>
@@ -73,7 +67,7 @@
 </div>
 <div id="chatInput">
     <input type="text" id="message" value="" /><br /><br />
-    <input type="button" value="send" />
+    <input type="button" onclick="sendMessage()" value="send" />
 </div>
 
 

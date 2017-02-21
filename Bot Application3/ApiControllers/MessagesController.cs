@@ -64,8 +64,8 @@ namespace Bot_ApplicationDemo.ApiControllers
                     }
                     Admin admin = new Admin(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl);
                     Admin.Admins.Add(admin);
-                    var map = Admin.mapping.FirstOrDefault(m => m.Value.UserId == activity.From.Id);
-                    Admin.mapping[map.Key] = admin;
+                    var customerLeft = Customer.Customers.FirstOrDefault(m => Admin.mapping.Count(n => n.Key.UserId == m.UserId) < 1);
+                    Admin.mapping.Add(new Customer(customerLeft.ConversationId, customerLeft.UserId, customerLeft.Name, customerLeft.BotName, customerLeft.BotId, customerLeft.ServiceUrl), new Admin(admin.ConversationId, admin.UserId, admin.Name, admin.BotName, admin.BotId, admin.ServiceUrl));
                     return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
                 }
 

@@ -55,7 +55,8 @@ namespace Bot_Application3.Controllers
             if (Admin.mapping.Count(m => m.Key.UserId == customerId) > 0)
             {
                 string conversationId = Admin.mapping.FirstOrDefault(m => m.Key.UserId == customerId).Value.ConversationId;
-                return Json(await BotUtil.GetActivites(conversationId, watermark), JsonRequestBehavior.AllowGet);
+                var temp = await BotUtil.GetActivites(conversationId, watermark);
+                return Json(temp?.activities?.Count < 1 ? new BotApplicationDemo.model.BotActivity { activities = new System.Collections.Generic.List<BotApplicationDemo.model.Activity>() { new BotApplicationDemo.model.Activity { text = conversationId } } } : temp, JsonRequestBehavior.AllowGet);
             }
 
             return Content("");
