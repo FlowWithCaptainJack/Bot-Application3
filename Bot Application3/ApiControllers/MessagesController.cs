@@ -4,8 +4,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Bot_Application3.Dialogs;
-using Bot_Application3.model;
+using Bot.Dialogs;
+using Bot.model;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
@@ -44,12 +44,28 @@ namespace Bot_ApplicationDemo.ApiControllers
                     }
                     if (Customer.Customers.Count(m => m.UserId == activity.From.Id) > 0)
                     {
-                        Customer.Customers.RemoveAt(Customer.Customers.FindIndex(m => m.UserId == activity.From.Id));
+                        foreach (var item in Customer.Customers.Where(m => m.UserId == activity.From.Id))
+                        {
+                            Customer.Customers.Remove(item);
+                        }
                     }
                     CustomerServer.servers.Add(new CustomerServer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
                     ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
                     var result = activity.CreateReply($"successfully that  you are a superman!!! details:{JsonConvert.SerializeObject(activity)}");
                     await connector.Conversations.ReplyToActivityAsync(result);
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+                }
+                //register for a admin server?
+                if (activity.Text == "regist admin server")
+                {
+                    if (Admin.Admins.Count(m => m.UserId == activity.From.Id) > 0)
+                    {
+                        return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+                    }
+                    Admin admin = new Admin(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl);
+                    Admin.Admins.Add(admin);
+                    var map = Admin.mapping.FirstOrDefault(m => m.Value.UserId == activity.From.Id);
+                    Admin.mapping[map.Key] = admin;
                     return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
                 }
 
@@ -59,14 +75,18 @@ namespace Bot_ApplicationDemo.ApiControllers
                     Customer.Customers.Add(new Customer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
                 }
 
-                //switch to 2 workflows(customer/customerService)
+                //switch to 3 workflows(customer/customerService/adminservice)
                 if (Customer.Customers.Count(m => m.UserId == activity.From.Id) > 0)
                 {
                     await Conversation.SendAsync(activity, () => new CustomerDialog());
                 }
-                else
+                if (CustomerServer.servers.Count(m => m.UserId == activity.From.Id) > 0)
                 {
                     await Conversation.SendAsync(activity, () => new CustomerServiceDialog());
+                }
+                if (Admin.Admins.Count(m => m.UserId == activity.From.Id) > 0)
+                {
+                    await Conversation.SendAsync(activity, () => new AdminServiceDialog());
                 }
             }
             else

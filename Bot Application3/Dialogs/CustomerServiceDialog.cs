@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Bot_Application3.model;
+using Bot.model;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
-namespace Bot_Application3.Dialogs
+namespace Bot.Dialogs
 {
     [Serializable]
     class CustomerServiceDialog : BaseDialog

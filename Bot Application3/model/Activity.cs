@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace BotApplicationDemo.model
 {
@@ -11,6 +12,8 @@ namespace BotApplicationDemo.model
         public string replyToId { get; set; }
 
         public From from { get; set; }
+
+        public DateTime timestamp { get; set; }
 
         public Recipient recipient { get; set; }
 

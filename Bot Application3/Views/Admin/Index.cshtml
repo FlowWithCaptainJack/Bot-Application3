@@ -1,0 +1,79 @@
+﻿@using Bot.model
+@using Newtonsoft.Json;
+@{
+    ViewBag.Title = "Index";
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+    var intervals = [];
+    function loadChat(userInfo) {
+        //clear all intervals
+        while (intervals.length>0) {
+            window.clearInterval(intervals.pop());
+        }
+        $("#chatRoom").html("");
+        intervals.push(
+            setInterval(function () {
+                getMessage(userInfo);
+        }, 500));
+    }
+    function getMessage(userInfo) {
+        var customerId = $(userInfo).attr("customerId");
+        $.ajax({
+            type: "GET",
+            url: "/admin/GetMessages",
+            data: "customerId=" + customerId + "&watermark=" + $(userInfo).attr("watermark"),
+            dataType: "json",
+            success: function (msg) {
+                $(userInfo).attr("watermark", msg.watermark);
+                for (var i = 0; i < msg.activities.length; i++) {
+                    var activity = msg.activities[i];
+                    var flag = customerId == activity.from.id;
+                    $("#chatRoom").append("<div style='float:" + (flag ? "left" : "right") + "'>" + activity.text + "</div>");
+                }
+            }
+
+        });
+    }
+    function sendMessage() {
+        var customerId = $(userInfo).attr("customerId");
+        $.ajax({
+            type: "POST",
+            url: "/admin",
+            data: "customerId=" + $(userInfo).attr("customerId") + "&watermark=" + $(userInfo).attr("watermark"),
+            dataType: "json",
+            success: function (msg) {
+                $(userInfo).attr("watermark", msg.watermark);
+                for (var i = 0; i < msg.activities.length; i++) {
+                    var activity = msg.activities[i];
+                    var flag = customerId == activity.from.id;
+                    $("#chatRoom").append("<div style='float:" + activity ? "left" : "right" + "'>" + activity.text + "</div>");
+                }
+            }
+
+        });
+    }
+</script>
+<h2>Index</h2>
+<div id="user">
+    @{
+        <h1>CustomerServer.servers @JsonConvert.SerializeObject(CustomerServer.servers)</h1>
+        <h1>Customer.Customers @JsonConvert.SerializeObject(Customer.Customers)</h1>
+        <h1>CustomerServer.mapping @JsonConvert.SerializeObject(CustomerServer.mapping)</h1>
+        <h1>Admin.Admins @JsonConvert.SerializeObject(Admin.Admins)</h1>
+        <h1>Admin.mapping @JsonConvert.SerializeObject(Admin.mapping)</h1>
+        foreach (var item in ViewData["mapping"] as Dictionary<Customer, CustomerServer>)
+        {
+            <h1 onclick="loadChat(this)" customerId="@item.Key.UserId" watermark="">@item.Key.Name</h1>
+        }
+    }
+</div>
+<div id="chatRoom">
+
+</div>
+<div id="chatInput">
+    <input type="text" id="message" value="" /><br /><br />
+    <input type="button" value="send" />
+</div>
+
+

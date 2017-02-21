@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Bot_Application3.model;
+using Bot.model;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
-namespace Bot_Application3.Dialogs
+namespace Bot.Dialogs
 {
     [Serializable]
     public class EchoDialog : BaseDialog

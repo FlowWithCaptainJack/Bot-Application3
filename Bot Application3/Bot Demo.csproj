@@ -152,6 +152,8 @@
     <Content Include="Global.asax" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <None Include="Properties\PublishProfiles\botapplication - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\botapplication - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
@@ -165,9 +167,11 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="ApiControllers\MessagesController.cs" />
     <Compile Include="ApiControllers\WechatController.cs" />
+    <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Dialogs\BaseDialog.cs" />
     <Compile Include="Dialogs\CustomerDialog.cs" />
+    <Compile Include="Dialogs\AdminServiceDialog.cs" />
     <Compile Include="Dialogs\CustomerServiceDialog.cs" />
     <Compile Include="Dialogs\EchoDialog.cs" />
     <Compile Include="Dialogs\LuisDialog.cs" />
@@ -175,6 +179,8 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="model\Activity.cs" />
+    <Compile Include="model\Admin.cs" />
+    <Compile Include="model\BotAccount.cs" />
     <Compile Include="model\Customer.cs" />
     <Compile Include="model\CustomerServer.cs" />
     <Compile Include="model\InnerData.cs" />
@@ -190,14 +196,11 @@
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
-    <None Include="Properties\PublishProfiles\BotApplicationDemollm - FTP.pubxml" />
-    <None Include="Properties\PublishProfiles\BotApplicationDemollm - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\botdemo - FTP.pubxml" />
-    <None Include="Properties\PublishProfiles\botdemo - Web Deploy.pubxml" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Admin\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

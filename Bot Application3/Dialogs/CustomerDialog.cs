@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Bot_Application3.model;
+using Bot.model;
 using BotApplicationDemo.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
-namespace Bot_Application3.Dialogs
+namespace Bot.Dialogs
 {
     [Serializable]
     public class CustomerDialog : BaseDialog
@@ -15,21 +15,38 @@ namespace Bot_Application3.Dialogs
         public override async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             var message = await argument as Activity;
-            //chat with customerService
+            var user = Customer.Customers.FirstOrDefault(m => m.UserId == message.From.Id && m.ConversationId == message.Conversation.Id);
+            // check admin server
+            if (Admin.mapping.Count(m => m.Key.UserId == message.From.Id) < 1)
+            {
+                string conversationId = await BotUtil.StartConversation();
+                await BotUtil.SendActivity(conversationId, "admin" + user.UserId, "admin", "regist admin server");
+                Admin.mapping.Add(user, new Admin(conversationId, "admin" + user.UserId, "admin", "botdemollm", "botdemollm@pcz91rOW0-c", "https://directline.botframework.com/"));
+            }
+            // chat with admin?
+            if (!user.BotEnabled)
+            {
+                if (Admin.mapping.Count(m => m.Key.UserId == message.From.Id) > 0)
+                {
+                    //send to admin(customerRole)
+                    var map = Admin.mapping.FirstOrDefault(m => m.Key.UserId == message.From.Id);
+                    var admin = map.Value;
+                    await SendActivity(admin, $"【{message.From.Name}】:{message.Text}");
+                    context.Wait(MessageReceivedAsync);
+                    return;
+                }
+            }
+            //chat with customerService?
             if (CustomerServer.mapping.Count(m => m.Key.UserId == message.From.Id) > 0)
             {
                 //send to customerServer(customerRole)
                 var map = CustomerServer.mapping.FirstOrDefault(m => m.Key.UserId == message.From.Id);
                 var customerServer = map.Value;
-                string serviceUrl = customerServer.ServiceUrl;
-                var userAccount = new ChannelAccount(id: customerServer.UserId, name: customerServer.Name);
-                var botAccount = new ChannelAccount(id: customerServer.BotId, name: customerServer.BotName);
-                var conversationId = customerServer.ConversationId;
-                await BotUtil.SendActivityFromBot(conversationId, userAccount, botAccount, $"【{message.From.Name}】:{message.Text}", serviceUrl);
+                await SendActivity(customerServer, $"【{message.From.Name}】:{message.Text}");
                 context.Wait(MessageReceivedAsync);
                 return;
             }
-            //connect to customerService
+            //connect to customerService?
             if (message.Text == "9")
             {
                 var busyIds = CustomerServer.mapping.Select(m => m.Value.UserId);
@@ -51,7 +68,7 @@ namespace Bot_Application3.Dialogs
                 context.Wait(MessageReceivedAsync);
                 return;
             }
-            //chat with cleverbot
+            //chat with cleverbot?
             if (!InnerData.dic.ContainsKey(message.Text))
             {
                 await context.Forward(new CleverBotDialog(), ResumeAfterDialog, message, CancellationToken.None);
