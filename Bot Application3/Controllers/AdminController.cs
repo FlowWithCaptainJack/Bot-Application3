@@ -17,12 +17,6 @@ namespace Bot_Application3.Controllers
             return View();
         }
 
-        public ActionResult Test()
-        {
-
-            return Content("");
-        }
-
         /// <summary>
         /// send message to customer
         /// </summary>
@@ -32,7 +26,7 @@ namespace Bot_Application3.Controllers
         [HttpPost]
         public async Task<ActionResult> Index(string content, string customerId)
         {
-            Customer.Customers[0].BotEnabled = false;
+            Customer.Customers.FirstOrDefault(m => m.UserId == customerId).BotEnabled = false;
             if (Admin.mapping.Count(m => m.Key.UserId == customerId) > 0)
             {
                 var user = Admin.mapping.FirstOrDefault(m => m.Key.UserId == customerId).Key;
@@ -48,18 +42,9 @@ namespace Bot_Application3.Controllers
         public async Task<ActionResult> GetMessages(string customerId, string watermark = "")
         {
             var user = Customer.Customers.FirstOrDefault(m => m.UserId == customerId);
-            if (user.BotEnabled)
-            {
-                return Json(await BotUtil.GetActivites(user.ConversationId, watermark), JsonRequestBehavior.AllowGet);
-            }
-            if (Admin.mapping.Count(m => m.Key.UserId == customerId) > 0)
-            {
-                string conversationId = Admin.mapping.FirstOrDefault(m => m.Key.UserId == customerId).Value.ConversationId;
-                var temp = await BotUtil.GetActivites(conversationId, watermark);
-                return Json(temp?.activities?.Count < 1 ? new BotApplicationDemo.model.BotActivity { activities = new System.Collections.Generic.List<BotApplicationDemo.model.Activity>() { new BotApplicationDemo.model.Activity { text = conversationId } } } : temp, JsonRequestBehavior.AllowGet);
-            }
-
-            return Content("");
+            var result = await BotUtil.GetActivites(user.ConversationId, watermark);
+            result.activities = result.activities?.Where(m => !string.IsNullOrWhiteSpace(m.from?.id))?.ToList();
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
     }
 }

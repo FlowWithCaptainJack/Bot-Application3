@@ -42,13 +42,6 @@ namespace Bot_ApplicationDemo.ApiControllers
                     {
                         return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
                     }
-                    if (Customer.Customers.Count(m => m.UserId == activity.From.Id) > 0)
-                    {
-                        foreach (var item in Customer.Customers.Where(m => m.UserId == activity.From.Id))
-                        {
-                            Customer.Customers.Remove(item);
-                        }
-                    }
                     CustomerServer.servers.Add(new CustomerServer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
                     ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
                     var result = activity.CreateReply($"successfully that  you are a superman!!! details:{JsonConvert.SerializeObject(activity)}");

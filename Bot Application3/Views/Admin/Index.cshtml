@@ -3,19 +3,46 @@
 @{
     ViewBag.Title = "Index";
 }
+<style>
+    .wrap {
+        float: left;
+        width: 200px;
+        margin-right: 50px;
+    }
+
+    .user_list {
+        float: left;
+        width: 800px;
+        height: 800px;
+        border-left: 1px solid blue;
+    }
+
+    .dialog {
+        float: left;
+        background-color: aqua;
+        width: 500px;
+        clear: both;
+        margin-bottom:20px;
+    }
+
+    .chat_box {
+        position: fixed;
+        bottom: 0;
+    }
+</style>
 <script src="~/Scripts/jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
     var intervals = [];
     function loadChat(userInfo) {
         //clear all intervals
-        while (intervals.length>0) {
+        while (intervals.length > 0) {
             window.clearInterval(intervals.pop());
         }
         $("#chatRoom").html("");
         intervals.push(
             setInterval(function () {
                 getMessage(userInfo);
-        }, 500));
+            }, 500));
     }
     function getMessage(userInfo) {
         var customerId = $(userInfo).attr("customerId");
@@ -29,7 +56,10 @@
                 for (var i = 0; i < msg.activities.length; i++) {
                     var activity = msg.activities[i];
                     var flag = customerId == activity.from.id;
-                    $("#chatRoom").append("<div style='float:" + (flag ? "left" : "right") + "'>" + activity.text + "</div>");
+                    if ($("#chatRoom div[id='" + activity .id+ "']").length>0) {
+                        continue;
+                    }
+                    $("#chatRoom").append("<div class='dialog' id='"+activity.id+"' style='float:" + (flag ? "left" : "right") + "'>" + activity.text + "</div>");
                 }
             }
 
@@ -42,32 +72,35 @@
             data: "customerId=" + $("#test").attr("customerId") + "&content=" + $("#message").val(),
             dataType: "json",
             success: function (msg) {
-                $("#chatRoom").append("<div style='float:" + (activity ? "left" : "right" )+ "'>" + $("#message").val() + "</div>");
+              
             }
 
         });
     }
 </script>
-<h2>Index</h2>
-<div id="user">
-    @{
-        <h1>CustomerServer.servers @JsonConvert.SerializeObject(CustomerServer.servers)</h1>
-        <h1>Customer.Customers @JsonConvert.SerializeObject(Customer.Customers)</h1>
-        <h1>CustomerServer.mapping @JsonConvert.SerializeObject(CustomerServer.mapping)</h1>
-        <h1>Admin.Admins @JsonConvert.SerializeObject(Admin.Admins)</h1>
-        <h1>Admin.mapping @JsonConvert.SerializeObject(Admin.mapping)</h1>
-        foreach (var item in ViewData["mapping"] as Dictionary<Customer, CustomerServer>)
-        {
-            <h1 id="test" onclick="loadChat(this)" customerId="@item.Key.UserId" watermark="">@item.Key.Name</h1>
-        }
-    }
-</div>
-<div id="chatRoom">
+<div style="height:800px;">
+    <div id="user" class="wrap">
+        @{
 
-</div>
-<div id="chatInput">
-    <input type="text" id="message" value="" /><br /><br />
-    <input type="button" onclick="sendMessage()" value="send" />
+            foreach (var item in ViewData["mapping"] as Dictionary<Customer, CustomerServer>)
+            {
+                <h1 id="test" onclick="loadChat(this)" customerId="@item.Key.UserId" watermark="">@item.Key.Name</h1>
+            }
+        }
+    </div>
+    <div class="user_list">
+        <div id="chatRoom">
+
+        </div>
+        <div id="chatInput" class="chat_box">
+            <div style="float:left">
+                <input type="text" id="message" value="" />
+            </div>
+            <div style="float:left">
+                <input type="button" onclick="sendMessage()" value="send" />
+            </div>
+        </div>
+    </div>
 </div>
 
 
