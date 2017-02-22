@@ -33,12 +33,14 @@
 <script src="~/Scripts/jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
     var intervals = [];
+    var currentUser = null;
     function loadChat(userInfo) {
         //clear all intervals
         while (intervals.length > 0) {
             window.clearInterval(intervals.pop());
         }
         $("#chatRoom").html("");
+        currentUser = userInfo;
         intervals.push(
             setInterval(function () {
                 getMessage(userInfo);
@@ -59,13 +61,40 @@
                     if ($("#chatRoom div[id='" + activity .id+ "']").length>0) {
                         continue;
                     }
-                    $("#chatRoom").append("<div class='dialog' id='"+activity.id+"' style='float:" + (flag ? "left" : "right") + "'>" + activity.text + "</div>");
+                    //$("#chatRoom").append("<div class='dialog' id='"+activity.id+"' style='float:" + (flag ? "left" : "right") + "'>" + activity.text + "</div>");
+                    var $divTxtBox = $("<div class='dialog'></div>").css("float", flag ? "left" : "right").attr("id", activity.id).appendTo($("#chatRoom"));
+
+                    var $divTxt = $("<div></div>").text(activity.text).appendTo($divTxtBox);
+                    if ($(currentUser).attr("adminEnable") == "true" && flag) {
+                        $.ajax({
+                            type: "get",
+                            url: "/admin/GetIntelligence",
+                            data: "question=" +activity.text,
+                            dataType: "json",
+                            error:function (XMLHttpRequest, textStatus, errorThrown) {
+                                alert(errorThrown);
+                                alert(XMLHttpRequest);
+                                alert(textStatus);
+
+                            },
+                            success: function (msg) {
+                                if (msg.count > 0) {
+                                    var result = "";
+                                    for (var i = 0; i < msg.content.length; i++) {
+                                        result += "<p>" + msg.content[i] + "</p>";
+                                    }
+                                    var $tip = $("<div></div>").css("backgroundColor", "yellow").appendTo($divTxtBox).html(result);
+                                }
+                            }
+                        });
+                    }
                 }
             }
 
         });
     }
     function sendMessage() {
+        $(currentUser).attr("adminEnable","true")
         $.ajax({
             type: "POST",
             url: "/admin",

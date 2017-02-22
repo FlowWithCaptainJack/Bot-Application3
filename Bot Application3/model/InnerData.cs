@@ -5,9 +5,17 @@ namespace Bot.model
     public class InnerData
     {
         public static Dictionary<string, string> dic = null;
+        public static Dictionary<string, string> questionAnswer = null;
         static InnerData()
         {
             dic = new Dictionary<string, string>();
+            questionAnswer = new Dictionary<string, string>();
+            questionAnswer.Add("客户投诉本人", "# 抱歉给您带来不好的体验，马上将您的问题提交我的上级领导，他会1小时内与您联系，希望您能谅解！\n\n"
+                           );
+            questionAnswer.Add("客户投诉其他部门", "# 抱歉给您带来不好的体验，请您详细说下当时的情况，我们会马上向相关部门反映情况。\n\n"
+                           );
+            questionAnswer.Add("投诉产品质量", "# 抱歉给您带来不好的体验，请您详细说下您遇到的问题，我们会马上向产品部门反映情况。您方便留下联系方式么？以便于我们后续联系您。\n\n"
+                           );
             dic.Add("0", "# 欢迎使用！\n\n" +
                       "1. 屏幕问题\n\n" +
                       "2. 主机问题\n\n" +
