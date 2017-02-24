@@ -10,6 +10,9 @@ namespace Bot.model
         public string BotName { get; set; }
         public string ServiceUrl { get; set; }
         public string BotId { get; set; }
+        public BotAccount()
+        {
+        }
         public BotAccount(string conversationId, string userId, string name, string botName, string botId, string serviceUrl)
         {
             ConversationId = conversationId;

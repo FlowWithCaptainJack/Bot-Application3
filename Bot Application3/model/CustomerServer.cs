@@ -4,6 +4,9 @@ namespace Bot.model
 {
     public class CustomerServer : BotAccount
     {
+        public CustomerServer()
+        {
+        }
         public CustomerServer(string conversationId, string userId, string name, string botName, string botId, string serviceUrl) : base(conversationId, userId, name, botName, botId, serviceUrl)
         {
             ConversationId = conversationId;
@@ -13,6 +16,7 @@ namespace Bot.model
             BotId = botId;
             ServiceUrl = serviceUrl;
         }
+        public virtual Customer Customer { get; set; }
         public static List<CustomerServer> servers = new List<CustomerServer>();
         public static Dictionary<Customer, CustomerServer> mapping = new Dictionary<Customer, CustomerServer>(new BotAccountComparer());
     }

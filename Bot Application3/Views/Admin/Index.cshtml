@@ -111,9 +111,9 @@
     <div id="user" class="wrap">
         @{
 
-            foreach (var item in ViewData["mapping"] as Dictionary<Customer, CustomerServer>)
+            foreach (var item in ViewData["mapping"] as IEnumerable<Customer>)
             {
-                <h1 id="test" onclick="loadChat(this)" customerId="@item.Key.UserId" watermark="">@item.Key.Name</h1>
+                <h1 id="test" onclick="loadChat(this)" customerId="@item.UserId" watermark="">@item.Name</h1>
             }
         }
     </div>

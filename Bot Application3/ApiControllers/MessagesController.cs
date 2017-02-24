@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Bot.Dialogs;
 using Bot.model;
+using Bot_Application3.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
@@ -34,53 +35,58 @@ namespace Bot_ApplicationDemo.ApiControllers
                     return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
                 }
                 messages.Enqueue(activity.From.Id + activity.Id);
-
-                //register for a customerService?
-                if (activity.Text == "i am a superman")
+                using (var db = new BotdbUtil())
                 {
-                    if (CustomerServer.servers.Count(m => m.UserId == activity.From.Id) > 0)
+                    //register for a customerService?
+                    if (activity.Text == "i am a superman")
                     {
+                        if (db.CustomerServer.Count(m => m.UserId == activity.From.Id) > 0)
+                        {
+                            return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+                        }
+                        db.CustomerServer.Add(new CustomerServer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
+                        db.SaveChanges();
+                        ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+                        var result = activity.CreateReply($"successfully that  you are a superman!!! details:{JsonConvert.SerializeObject(activity)}");
+                        await connector.Conversations.ReplyToActivityAsync(result);
                         return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
                     }
-                    CustomerServer.servers.Add(new CustomerServer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
-                    ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-                    var result = activity.CreateReply($"successfully that  you are a superman!!! details:{JsonConvert.SerializeObject(activity)}");
-                    await connector.Conversations.ReplyToActivityAsync(result);
-                    return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
-                }
-                //register for a admin server?
-                if (activity.Text == "regist admin server")
-                {
-                    if (Admin.Admins.Count(m => m.UserId == activity.From.Id) > 0)
+                    //register for a admin server?
+                    if (activity.Text == "regist admin server")
                     {
+                        var admin = db.Admin.Find(activity.From.Id);
+                        if (admin != null)
+                        {
+                            admin.BotId = activity.Recipient.Id;
+                            admin.BotName = activity.Recipient.Name;
+                            admin.ServiceUrl = activity.ServiceUrl;
+                            db.SaveChanges();
+                        }
                         return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
                     }
-                    Admin admin = new Admin(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl);
-                    Admin.Admins.Add(admin);
-                    var customerLeft = Customer.Customers.FirstOrDefault(m => Admin.mapping.Count(n => n.Key.UserId == m.UserId) < 1);
-                    Admin.mapping.Add(new Customer(customerLeft.ConversationId, customerLeft.UserId, customerLeft.Name, customerLeft.BotName, customerLeft.BotId, customerLeft.ServiceUrl), new Admin(admin.ConversationId, admin.UserId, admin.Name, admin.BotName, admin.BotId, admin.ServiceUrl));
-                    return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+
+                    //register for a customer(default)
+                    if (db.CustomerServer.Count(m => m.UserId == activity.From.Id) < 1 && db.Customer.Count(m => m.UserId == activity.From.Id) < 1)
+                    {
+                        db.Customer.Add(new Customer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
+                        db.SaveChanges();
+                    }
+                    //switch to 3 workflows(customer/customerService/adminservice)
+                    if (db.Customer.Count(m => m.UserId == activity.From.Id) > 0)
+                    {
+                        await Conversation.SendAsync(activity, () => new CustomerDialog());
+                    }
+                    if (db.CustomerServer.Count(m => m.UserId == activity.From.Id) > 0)
+                    {
+                        await Conversation.SendAsync(activity, () => new CustomerServiceDialog());
+                    }
+                    if (db.Admin.Count(m => m.UserId == activity.From.Id) > 0)
+                    {
+                        await Conversation.SendAsync(activity, () => new AdminServiceDialog());
+                    }
                 }
 
-                //register for a customer(default)
-                if (CustomerServer.servers.Count(m => m.UserId == activity.From.Id) < 1 && Customer.Customers.Count(m => m.UserId == activity.From.Id) < 1)
-                {
-                    Customer.Customers.Add(new Customer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
-                }
 
-                //switch to 3 workflows(customer/customerService/adminservice)
-                if (Customer.Customers.Count(m => m.UserId == activity.From.Id) > 0)
-                {
-                    await Conversation.SendAsync(activity, () => new CustomerDialog());
-                }
-                if (CustomerServer.servers.Count(m => m.UserId == activity.From.Id) > 0)
-                {
-                    await Conversation.SendAsync(activity, () => new CustomerServiceDialog());
-                }
-                if (Admin.Admins.Count(m => m.UserId == activity.From.Id) > 0)
-                {
-                    await Conversation.SendAsync(activity, () => new AdminServiceDialog());
-                }
             }
             else
             {
