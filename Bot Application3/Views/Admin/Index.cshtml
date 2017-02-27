@@ -4,7 +4,7 @@
     ViewBag.Title = "Index";
 }
 <style>
-    .wrap {
+       .wrap {
         float: left;
         width: 200px;
         margin-right: 50px;
@@ -22,16 +22,37 @@
         background-color: aqua;
         width: 500px;
         clear: both;
-        margin-bottom:20px;
+        margin-bottom: 20px;
     }
 
     .chat_box {
         position: fixed;
         bottom: 0;
     }
+
+    .IsAuto {
+    margin-left:20px;
+    border:0;
+    }
+       
+
+    .userItem {
+    margin-bottom:10px;
+    }
+
+    .enabled {
+    background-color:cornflowerblue;
+    }
+     .disabled {
+    background-color:lightgray;
+    }
 </style>
 <script src="~/Scripts/jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
+    $(function () {
+        loadUsers();
+    });
+
     var intervals = [];
     var currentUser = null;
     function loadChat(userInfo) {
@@ -58,7 +79,7 @@
                 for (var i = 0; i < msg.activities.length; i++) {
                     var activity = msg.activities[i];
                     var flag = customerId == activity.from.id;
-                    if ($("#chatRoom div[id='" + activity .id+ "']").length>0) {
+                    if ($("#chatRoom div[id='" + activity.id + "']").length > 0) {
                         continue;
                     }
                     //$("#chatRoom").append("<div class='dialog' id='"+activity.id+"' style='float:" + (flag ? "left" : "right") + "'>" + activity.text + "</div>");
@@ -69,9 +90,9 @@
                         $.ajax({
                             type: "get",
                             url: "/admin/GetIntelligence",
-                            data: "question=" +activity.text,
+                            data: "question=" + activity.text,
                             dataType: "json",
-                            error:function (XMLHttpRequest, textStatus, errorThrown) {
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
                                 alert(errorThrown);
                                 alert(XMLHttpRequest);
                                 alert(textStatus);
@@ -94,28 +115,58 @@
         });
     }
     function sendMessage() {
-        $(currentUser).attr("adminEnable","true")
+        $(currentUser).attr("adminEnable", "true")
         $.ajax({
             type: "POST",
             url: "/admin",
             data: "customerId=" + $("#test").attr("customerId") + "&content=" + $("#message").val(),
             dataType: "json",
             success: function (msg) {
-              
+
             }
 
         });
     }
+
+    function isEnable(ele, customerId) {
+        var $ele = $(ele);
+        var status = $ele[0].className.indexOf("enabled") == -1 ? true : false;
+        $.ajax({
+            type: "POST",
+            url: "/admin/ChangeAutoStatus",
+            data: { customerId: customerId, status: status },
+            dataType: "json",
+            success: function (msg) {
+                if (!msg.status) {
+                    $(ele).removeClass("enabled").addClass("disabled").text("托管");
+                } else {
+                    $(ele).removeClass("disabled").addClass("enabled").text("启用");;
+                }
+            }
+        });
+
+    }
+
+    function loadUsers() {
+        $.ajax({
+            type: "GET",
+            url: "/admin/GetUsers",
+            dataType: "json",
+            success: function (msg) {
+                var userHtml = "";
+                $.each(msg, function (i, item) {
+                    var btnTxt = item.BotEnabled ? "启用" : "托管";
+                    var btnClass = item.BotEnabled ? "enabled" : "disabled";
+                    userHtml += '<div class="userItem"><span onclick="loadChat(this)" customerId=' + item.UserId + 'watermark="">' + item.Name + '</span><button class="IsAuto ' + btnClass + '" onclick="isEnable(this,\'' + item.UserId + '\')">' + btnTxt + '</button></div>';
+                });
+                $("#user").html(userHtml);
+            }
+        });
+
+    }
 </script>
 <div style="height:800px;">
     <div id="user" class="wrap">
-        @{
-
-            foreach (var item in ViewData["mapping"] as IEnumerable<Customer>)
-            {
-                <h1 id="test" onclick="loadChat(this)" customerId="@item.UserId" watermark="">@item.Name</h1>
-            }
-        }
     </div>
     <div class="user_list">
         <div id="chatRoom">

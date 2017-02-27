@@ -22,6 +22,15 @@ namespace Bot_Application3.Controllers
             return View();
         }
 
+        public ActionResult GetUsers()
+        {
+            using (var db = new BotdbUtil())
+            {
+                var result = db.Customer?.ToList();
+                return Json(result, JsonRequestBehavior.AllowGet);
+            }
+        }
+
 
         //Get intelligence
 
@@ -77,6 +86,16 @@ namespace Bot_Application3.Controllers
             }
 
 
+        }
+        public async Task<ActionResult> ChangeAutoStatus(string customerId, bool status)
+        {
+            using (var db = new BotdbUtil())
+            {
+
+                db.Customer.Find(customerId).BotEnabled = status;
+                await db.SaveChangesAsync();
+            }
+            return Json(new { status = status });
         }
     }
 }
