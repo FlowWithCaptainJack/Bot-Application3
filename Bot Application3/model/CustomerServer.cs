@@ -17,7 +17,5 @@ namespace Bot.model
             ServiceUrl = serviceUrl;
         }
         public virtual Customer Customer { get; set; }
-        public static List<CustomerServer> servers = new List<CustomerServer>();
-        public static Dictionary<Customer, CustomerServer> mapping = new Dictionary<Customer, CustomerServer>(new BotAccountComparer());
     }
 }

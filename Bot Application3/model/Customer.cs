@@ -4,7 +4,6 @@ namespace Bot.model
 {
     public class Customer : BotAccount
     {
-        public static List<Customer> Customers = new List<Customer>();
         public bool BotEnabled { get; set; } = true;
         public Customer()
         {

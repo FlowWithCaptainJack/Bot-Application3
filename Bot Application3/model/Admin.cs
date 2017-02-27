@@ -12,7 +12,5 @@ namespace Bot.model
         {
         }
         public virtual Customer Customer { get; set; }
-        public static List<Admin> Admins = new List<Admin>();
-        public static Dictionary<Customer, Admin> mapping = new Dictionary<Customer, Admin>(new BotAccountComparer());
     }
 }
