@@ -1,8 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
-namespace BotApplicationDemo.model
+namespace Bot.model
 {
+    public class CustomerMessage
+    {
+        public Guid Id { get; set; }
+        public string CustomerId { get; set; }
+        public string FromId { get; set; }
+        public string Text { get; set; }
+        public long timestamp { get; set; }
+        [OnSerialized()]
+        internal void OnSerializedMethod(StreamingContext context)
+        {
+
+        }
+    }
     public class Activity
     {
         public string id { get; set; }

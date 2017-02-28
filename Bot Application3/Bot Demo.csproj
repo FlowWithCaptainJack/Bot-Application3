@@ -194,6 +194,14 @@
     <Compile Include="Migrations\201702230411439_Init.Designer.cs">
       <DependentUpon>201702230411439_Init.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201702270616567_AddCustomerMessage.cs" />
+    <Compile Include="Migrations\201702270616567_AddCustomerMessage.Designer.cs">
+      <DependentUpon>201702270616567_AddCustomerMessage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201702280424415_UpdateCustomerMessageTimeStamp.cs" />
+    <Compile Include="Migrations\201702280424415_UpdateCustomerMessageTimeStamp.Designer.cs">
+      <DependentUpon>201702280424415_UpdateCustomerMessageTimeStamp.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="model\Activity.cs" />
     <Compile Include="model\Admin.cs" />
@@ -206,6 +214,7 @@
     <Compile Include="Utilities\BotdbUtil.cs" />
     <Compile Include="Utilities\BotUtil.cs" />
     <Compile Include="Utilities\Cryptography.cs" />
+    <Compile Include="Utilities\JsonNetResult.cs" />
     <Compile Include="Utilities\Wechat.cs" />
     <Compile Include="Utilities\WXBizMsgCrypt.cs" />
   </ItemGroup>
@@ -229,6 +238,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201702230411439_Init.resx">
       <DependentUpon>201702230411439_Init.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702270616567_AddCustomerMessage.resx">
+      <DependentUpon>201702270616567_AddCustomerMessage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702280424415_UpdateCustomerMessageTimeStamp.resx">
+      <DependentUpon>201702280424415_UpdateCustomerMessageTimeStamp.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

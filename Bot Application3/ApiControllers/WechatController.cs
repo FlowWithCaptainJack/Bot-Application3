@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,8 +11,8 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Xml.Serialization;
-using BotApplicationDemo.model;
-using BotApplicationDemo.Utilities;
+using Bot.model;
+using Bot.Utilities;
 using Tencent;
 
 namespace Bot_ApplicationDemo.ApiControllers
@@ -25,6 +26,7 @@ namespace Bot_ApplicationDemo.ApiControllers
 
         static WechatController()
         {
+            //userConversation.Add("c944f4f1-a5ab-4ba7-977c-ba380916d971", new Conversation() { id = "2bdAnbN5ZDcGO7kz7BgwEI" });
             ThreadPool.QueueUserWorkItem(RecieveActivities);
         }
         // GET: Wechat
@@ -73,7 +75,7 @@ namespace Bot_ApplicationDemo.ApiControllers
                 else
                 {
                     conversationId = await BotUtil.StartConversation();
-                    userConversation.Add(weMsg.UserOpenId, new Conversation { id = conversationId, watermark = null });
+                    userConversation.Add(weMsg.UserOpenId, new Conversation { id = conversationId, messageStamp = new DateTime(1991, 12, 21).Ticks });
                 }
                 return;
             }
@@ -87,7 +89,7 @@ namespace Bot_ApplicationDemo.ApiControllers
                 else
                 {
                     conversationId = await BotUtil.StartConversation();
-                    userConversation.Add(weMsg.UserOpenId, new Conversation { id = conversationId, watermark = null });
+                    userConversation.Add(weMsg.UserOpenId, new Conversation { id = conversationId, messageStamp = new DateTime(1991, 12, 21).Ticks });
                 }
                 //SendActivity 
                 string replyid = await BotUtil.SendActivity(conversationId, weMsg.UserOpenId, await Wechat.GetUserName(weMsg.UserOpenId), weMsg.Content);
@@ -98,23 +100,29 @@ namespace Bot_ApplicationDemo.ApiControllers
         {
             while (true)
             {
-                var temp = userConversation.Where(m => true);
-                foreach (var item in temp)
-                {
-                    var botactivity = await BotUtil.GetActivites(item.Value.id, item.Value.watermark);
-                    if (botactivity?.activities?.Count(m => m.from.id != item.Key) > 0)
-                    {
-                        item.Value.watermark = botactivity.watermark;
-                        foreach (var activity in botactivity.activities.Where(m => m.from.id != item.Key))
-                        {
-                            // send message to wechat
-                            Wechat.PostMessageToUser(item.Key, activity.text);
-                        }
-                    }
-                }
-                if (temp.Count() < 1)
+                if (userConversation.Count() < 1)
                 {
                     await Task.Delay(1000);
+                }
+                using (var db = new BotdbUtil())
+                {
+                    foreach (var item in userConversation)
+                    {
+                        var messages = db.CustomerMessage.Where(m => m.CustomerId == item.Key && m.FromId != item.Key && m.timestamp > item.Value.messageStamp);
+                        if (messages?.Count() > 0)
+                        {
+                            //Trace.WriteLine(messages.Count());
+                            foreach (var message in messages)
+                            {
+                                // send message to wechat
+                                Wechat.PostMessageToUser(item.Key, message.Text);
+                                //Trace.WriteLine(message);
+                            }
+                            //Trace.WriteLine("***************");
+                            item.Value.messageStamp = messages.OrderByDescending(m => m.timestamp).FirstOrDefault().timestamp;
+                        }
+                    }
+                    await Task.Delay(200);
                 }
             }
 
@@ -123,7 +131,7 @@ namespace Bot_ApplicationDemo.ApiControllers
         class Conversation
         {
             public string id { get; set; }
-            public string watermark { get; set; }
+            public long messageStamp { get; set; } = new DateTime(1991, 12, 21).Ticks;
         }
     }
 

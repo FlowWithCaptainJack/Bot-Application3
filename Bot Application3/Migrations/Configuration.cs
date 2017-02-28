@@ -1,18 +1,15 @@
-namespace Bot_Application3.Migrations
+namespace Bot.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<Bot_Application3.Utilities.BotdbUtil>
+    internal sealed class Configuration : DbMigrationsConfiguration<Bot.Utilities.BotdbUtil>
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = false;
+            AutomaticMigrationsEnabled = true;
         }
 
-        protected override void Seed(Bot_Application3.Utilities.BotdbUtil context)
+        protected override void Seed(Bot.Utilities.BotdbUtil context)
         {
             //  This method will be called after migrating to the latest version.
 
