@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace BotApplicationDemo.model
+namespace Bot.model
 {
     [XmlRoot("xml")]
     public class WeChatMessage

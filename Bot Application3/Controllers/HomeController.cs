@@ -1,6 +1,6 @@
 ﻿using System.Web.Mvc;
 
-namespace Bot_Application3.Controllers
+namespace Bot.Controllers
 {
     public class HomeController : Controller
     {

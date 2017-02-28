@@ -1,4 +1,4 @@
-namespace Bot_Application3.Migrations
+namespace Bot.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;

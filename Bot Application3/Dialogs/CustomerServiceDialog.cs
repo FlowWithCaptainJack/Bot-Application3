@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Bot_Application3.Utilities;
+using Bot.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
@@ -21,6 +21,7 @@ namespace Bot.Dialogs
                     // stop chat with current customer?
                     if (message.Text.ToLower() == "#exit#")
                     {
+                        db.CustomerMessage.Add(new model.CustomerMessage { timestamp = DateTime.UtcNow.Ticks, CustomerId = customerServer.Customer.UserId, FromId = customerServer.Customer.BotId, Text = $"已经断开与客服【{customerServer.Name}】的连接" });
                         await SendActivity(customerServer.Customer, $"已经断开与客服【{customerServer.Name}】的连接");
                         await SendActivity(customerServer, $"已经断开与客户【{customerServer.Customer.Name}】的连接");
                         customerServer.Customer = null;
@@ -29,6 +30,8 @@ namespace Bot.Dialogs
                         return;
                     }
                     //send to customer
+                    db.CustomerMessage.Add(new model.CustomerMessage { timestamp = DateTime.UtcNow.Ticks, CustomerId = customerServer.Customer.UserId, FromId = customerServer.Customer.BotId, Text = $"【{message.From.Name}】:{message.Text}" });
+                    db.SaveChanges();
                     await SendActivity(customerServer.Customer, $"【{message.From.Name}】:{message.Text}");
                 }
                 else

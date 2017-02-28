@@ -3,7 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace BotApplicationDemo.Utilities
+namespace Bot.Utilities
 {
     public class Wechat
     {

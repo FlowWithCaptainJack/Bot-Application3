@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Bot_Application3.Utilities;
+using Bot.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
@@ -18,7 +18,9 @@ namespace Bot.Dialogs
                 if (admin != null)
                 {
                     //send to customer
-                    await SendActivity(admin, $"【{message.From.Name}】:{message.Text}");
+                    db.CustomerMessage.Add(new model.CustomerMessage { CustomerId = admin.Customer.UserId, FromId = admin.Customer.BotId, Text = $"【{message.From.Name}】:{message.Text}", timestamp = DateTime.UtcNow.Ticks });
+                    db.SaveChanges();
+                    await SendActivity(admin.Customer, $"【{message.From.Name}】:{message.Text}");
                 }
                 else
                 {
