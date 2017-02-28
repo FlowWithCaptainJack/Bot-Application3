@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Bot_Application3
+namespace Bot
 {
     public static class WebApiConfig
     {

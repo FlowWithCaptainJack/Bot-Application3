@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Bot.model;
-using BotApplicationDemo.Utilities;
+using Bot.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 

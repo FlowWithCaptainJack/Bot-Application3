@@ -3,11 +3,11 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using BotApplicationDemo.model;
+using Bot.model;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 
-namespace BotApplicationDemo.Utilities
+namespace Bot.Utilities
 {
     class BotUtil
     {

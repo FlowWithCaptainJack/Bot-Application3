@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Bot.Dialogs;
 using Bot.model;
-using Bot_Application3.Utilities;
+using Bot.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
@@ -21,7 +21,7 @@ namespace Bot_ApplicationDemo.ApiControllers
         /// POST: api/Messages
         /// Receive a message from a user and reply to it
         /// </summary>
-        public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
+        public async Task<HttpResponseMessage> Post([FromBody]Microsoft.Bot.Connector.Activity activity)
         {
             if (activity != null && activity.GetActivityType() == ActivityTypes.Message)
             {
@@ -66,7 +66,7 @@ namespace Bot_ApplicationDemo.ApiControllers
                     }
 
                     //register for a customer(default)
-                    if (db.CustomerServer.Count(m => m.UserId == activity.From.Id) < 1 && db.Customer.Count(m => m.UserId == activity.From.Id) < 1)
+                    if (db.CustomerServer.Count(m => m.UserId == activity.From.Id) < 1 && db.Admin.Count(m => m.UserId == activity.From.Id) < 1 && db.Customer.Count(m => m.UserId == activity.From.Id) < 1)
                     {
                         db.Customer.Add(new Customer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
                         db.SaveChanges();
@@ -94,7 +94,7 @@ namespace Bot_ApplicationDemo.ApiControllers
             }
             return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
         }
-        private async Task<Activity> HandleSystemMessage(Activity message)
+        private async Task<Microsoft.Bot.Connector.Activity> HandleSystemMessage(Microsoft.Bot.Connector.Activity message)
         {
             if (message.Type == ActivityTypes.DeleteUserData)
             {
@@ -105,9 +105,18 @@ namespace Bot_ApplicationDemo.ApiControllers
             {
                 if (message.MembersAdded?.Count() > 0 && message.MembersAdded.Count(m => !m.Name.ToLower().Contains("bot")) > 0)
                 {
-                    ConnectorClient connector = new ConnectorClient(new Uri(message.ServiceUrl));
-                    var result = message.CreateReply(InnerData.dic["0"]);
-                    await connector.Conversations.ReplyToActivityAsync(result);
+                    using (var db = new BotdbUtil())
+                    {
+                        if (db.Customer.Count(m => m.UserId == message.From.Id) > 0)
+                        {
+                            db.CustomerMessage.Add(new CustomerMessage { CustomerId = message.From.Id, FromId = message.From.Id, Text = message.Text, timestamp = message.Timestamp.Value.Ticks });
+                            db.SaveChanges();
+                            ConnectorClient connector = new ConnectorClient(new Uri(message.ServiceUrl));
+                            var result = message.CreateReply(InnerData.dic["0"]);
+                            await connector.Conversations.ReplyToActivityAsync(result);
+                        }
+                    }
+
                 }
             }
             else if (message.Type == ActivityTypes.ContactRelationUpdate)

@@ -2,12 +2,11 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Bot.model;
+using Bot.Utilities;
 using Bot_Application3.Utilities;
-using BotApplicationDemo.Utilities;
-using Microsoft.Bot.Connector;
 using Microsoft.Cognitive.LUIS;
 
-namespace Bot_Application3.Controllers
+namespace Bot.Controllers
 {
     public class AdminController : Controller
     {
@@ -55,28 +54,26 @@ namespace Bot_Application3.Controllers
                 db.SaveChanges();
                 if (db.Admin.Count(m => m.Customer.UserId == customerId) > 0)
                 {
-                    var user = db.Admin.FirstOrDefault(m => m.Customer.UserId == customerId).Customer;
-                    string serviceUrl = user.ServiceUrl;
-                    var userAccount = new ChannelAccount(id: user.UserId, name: user.Name);
-                    var botAccount = new ChannelAccount(id: user.BotId, name: user.BotName);
-                    var conversationId = user.ConversationId;
-                    await BotUtil.SendActivityFromBot(conversationId, userAccount, botAccount, content, serviceUrl);
+                    var admin = db.Admin.FirstOrDefault(m => m.Customer.UserId == customerId);
+                    var conversationId = admin.ConversationId;
+                    await BotUtil.SendActivity(conversationId, admin.UserId, admin.Name, content);
                     return Json(new { status = true });
                 }
             }
             return Json(new { status = false });
         }
-        public async Task<ActionResult> GetMessages(string customerId, string watermark = "")
+        public async Task<ActionResult> GetMessages(string customerId, long timestamp = 0)
         {
             using (var db = new BotdbUtil())
             {
                 var user = db.Customer.Find(customerId);
-                var result = await BotUtil.GetActivites(user.ConversationId, watermark);
-                result.activities = result.activities?.Where(m => !string.IsNullOrWhiteSpace(m.from?.id))?.ToList();
-                return Json(result, JsonRequestBehavior.AllowGet);
+                var messages = db.CustomerMessage.Where(m => m.CustomerId == user.UserId && m.timestamp > timestamp);
+                if (messages?.Count() > 0)
+                {
+                    return new JsonNetResult(new { count = messages.Count(), content = messages.ToList().OrderBy(m => m.timestamp), timestamp = messages.ToList().OrderByDescending(m => m.timestamp).FirstOrDefault().timestamp });
+                }
+                return Json(new { count = 0 }, JsonRequestBehavior.AllowGet);
             }
-
-
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Bot.model;
+using Bot.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
@@ -13,6 +15,11 @@ namespace Bot.Dialogs
         [LuisIntent("HostProblem")]
         public async Task Host(IDialogContext context, LuisResult result)
         {
+            using (var db = new BotdbUtil())
+            {
+                db.CustomerMessage.Add(new CustomerMessage { CustomerId = context.Activity.From.Id, FromId = context.Activity.Recipient.Id, Text = $"lisi will contact you later", timestamp = DateTime.UtcNow.Ticks });
+                db.SaveChanges();
+            }
             await context.PostAsync($"lisi will contact you later");
             context.Done(1);
         }
@@ -20,6 +27,11 @@ namespace Bot.Dialogs
         [LuisIntent("LapTopProblem")]
         public async Task LapTop(IDialogContext context, LuisResult result)
         {
+            using (var db = new BotdbUtil())
+            {
+                db.CustomerMessage.Add(new CustomerMessage { CustomerId = context.Activity.From.Id, FromId = context.Activity.Recipient.Id, Text = $"wanger will contact you later", timestamp = DateTime.UtcNow.Ticks });
+                db.SaveChanges();
+            }
             await context.PostAsync($"wanger will contact you later");
             context.Done(1);
         }
@@ -27,6 +39,11 @@ namespace Bot.Dialogs
         [LuisIntent("MonitorProblem")]
         public async Task Monitor(IDialogContext context, LuisResult result)
         {
+            using (var db = new BotdbUtil())
+            {
+                db.CustomerMessage.Add(new CustomerMessage { CustomerId = context.Activity.From.Id, FromId = context.Activity.Recipient.Id, Text = $"zhangsan will contact you later", timestamp = DateTime.UtcNow.Ticks });
+                db.SaveChanges();
+            }
             await context.PostAsync($"zhangsan will contact you later");
             context.Done(1);
         }
@@ -34,6 +51,11 @@ namespace Bot.Dialogs
         public async Task None(IDialogContext context, LuisResult result)
         {
             string messages = $"Sorry I did not understand what you said， if you need chatServer,pls enter \"9\"";
+            using (var db = new BotdbUtil())
+            {
+                db.CustomerMessage.Add(new CustomerMessage { CustomerId = context.Activity.From.Id, FromId = context.Activity.Recipient.Id, Text = messages, timestamp = DateTime.UtcNow.Ticks });
+                db.SaveChanges();
+            }
             await context.PostAsync(messages);
             context.Done(1);
         }
