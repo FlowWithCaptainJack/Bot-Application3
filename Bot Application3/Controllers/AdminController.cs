@@ -16,20 +16,10 @@ namespace Bot.Controllers
         {
             using (var db = new BotdbUtil())
             {
-                ViewData.Add("mapping", db.Customer?.ToList());
+                ViewData.Add("customers", db.Customer?.ToList());
             }
             return View();
         }
-
-        public ActionResult GetUsers()
-        {
-            using (var db = new BotdbUtil())
-            {
-                var result = db.Customer?.ToList();
-                return Json(result, JsonRequestBehavior.AllowGet);
-            }
-        }
-
 
         //Get intelligence
 
@@ -88,7 +78,6 @@ namespace Bot.Controllers
         {
             using (var db = new BotdbUtil())
             {
-
                 db.Customer.Find(customerId).BotEnabled = status;
                 await db.SaveChangesAsync();
             }

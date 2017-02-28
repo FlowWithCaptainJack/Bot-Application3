@@ -22,18 +22,59 @@
         background-color: aqua;
         width: 500px;
         clear: both;
-        margin-bottom:20px;
+        margin-bottom: 20px;
     }
 
     .chat_box {
         position: fixed;
         bottom: 0;
     }
+
+    .IsAuto {
+        margin-left: 20px;
+        border: 0;
+    }
+
+
+    .userItem {
+        margin-bottom: 10px;
+    }
+
+    .enabled {
+        background-color: cornflowerblue;
+    }
+
+    .disabled {
+        background-color: lightgray;
+    }
 </style>
 <script src="~/Scripts/jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
     var intervals = [];
     var currentUser = null;
+    function GetIntelligence(text, placeHolder) {
+        $.ajax({
+            type: "get",
+            url: "/admin/GetIntelligence",
+            data: "question=" + text,
+            dataType: "json",
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+                alert(XMLHttpRequest);
+                alert(textStatus);
+
+            },
+            success: function (msg) {
+                if (msg.count > 0) {
+                    var result = "";
+                    for (var i = 0; i < msg.content.length; i++) {
+                        result += "<p>" + msg.content[i] + "</p>";
+                    }
+                    var $tip = $("<div style='background-color:yellow'></div>").appendTo(placeHolder).html(result);
+                }
+            }
+        });
+    }
     function loadChat(userInfo) {
         //clear all intervals
         while (intervals.length > 0) {
@@ -54,47 +95,25 @@
             data: "customerId=" + customerId + "&timestamp=" + $(userInfo).attr("timestamp"),
             dataType: "json",
             success: function (msg) {
-                if (msg.count > 0) {
-                    $(userInfo).attr("timestamp", msg.timestamp);
-                    for (var i = 0; i < msg.content.length; i++) {
-                        var message = msg.content[i];
-                        var flag = customerId == message.fromId;
-                        if ($("#chatRoom div[id='" + message.id + "']").length > 0) {
-                            continue;
-                        }
-                        var $divTxtBox = $("<div class='dialog'></div>").css("float", flag ? "left" : "right").attr("id", message.id).appendTo($("#chatRoom"));
-                        var $divTxt = $("<div></div>").text(message.text).appendTo($divTxtBox);
-                        if ($(currentUser).attr("adminEnable") == "true" && flag) {
-                            GetIntelligence(message.text, $divTxtBox);
-                        }
+                if (msg.count<1) {
+                    return;
+                }
+                $(userInfo).attr("timestamp", msg.timestamp);
+                for (var i = 0; i < msg.content.length; i++) {
+                    var message = msg.content[i];
+                    var flag = customerId == message.fromId;
+                    if ($("#chatRoom div[id='" + message.id + "']").length > 0) {
+                        continue;
+                    }
+                    var $divTxtBox = $("<div class='dialog'></div>").css("float", flag ? "left" : "right").attr("id", message.id).appendTo($("#chatRoom"));
+                    var $divTxt = $("<div></div>").text(message.text).appendTo($divTxtBox);
+                    if ($(currentUser).attr("adminEnable") == "true" && flag) {
+                        GetIntelligence(message.text, $divTxtBox);
                     }
                 }
             }
 
         });
-    }
-    function GetIntelligence(text, placeHolder) {
-        $.ajax({
-            type: "get",
-            url: "/admin/GetIntelligence",
-            data: "question=" + text,
-            dataType: "json",
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(errorThrown);
-                alert(XMLHttpRequest);
-                alert(textStatus);
-
-            },
-            success: function (msg) {
-                if (msg.count > 0) {
-                    var result = "";
-                    for (var i = 0; i < msg.content.length; i++) {
-                        result += "<p>" + msg.content[i] + "</p>";
-                    }
-                    var $tip = $("<div style='backgroundColor:yellow'></div>").appendTo(placeHolder).html(result);
-                }
-            }
-        })
     }
     function sendMessage() {
         $(currentUser).attr("adminEnable", "true")
@@ -109,14 +128,32 @@
 
         });
     }
+
+    function isEnable(ele, customerId) {
+        var $ele = $(ele);
+        var status = $ele[0].className.indexOf("enabled") == -1 ? true : false;
+        $.ajax({
+            type: "POST",
+            url: "/admin/ChangeAutoStatus",
+            data: { customerId: customerId, status: status },
+            dataType: "json",
+            success: function (msg) {
+                if (!msg.status) {
+                    $(ele).removeClass("enabled").addClass("disabled").text("托管");
+                } else {
+                    $(ele).removeClass("disabled").addClass("enabled").text("启用");;
+                }
+            }
+        });
+
+    }
 </script>
 <div style="height:800px;">
     <div id="user" class="wrap">
         @{
-
-            foreach (var item in ViewData["mapping"] as IEnumerable<Customer>)
+            foreach (var item in ViewData["customers"] as IEnumerable<Customer>)
             {
-        <h1 id="test" onclick="loadChat(this)" customerId="@item.UserId" timestamp="">@item.Name</h1>
+                <div class="userItem"><span onclick="loadChat(this)" customerId= "@item.UserId"  timestamp=""> @item.Name  </span><button class="IsAuto @(item.BotEnabled?"enabled":"disabled") " onclick="isEnable(this,'@item.UserId' )">@(item.BotEnabled?"启用":"托管") </button></div>
             }
         }
     </div>
@@ -134,5 +171,3 @@
         </div>
     </div>
 </div>
-
-

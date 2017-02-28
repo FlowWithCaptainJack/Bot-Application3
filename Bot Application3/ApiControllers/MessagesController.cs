@@ -69,6 +69,7 @@ namespace Bot_ApplicationDemo.ApiControllers
                     if (db.CustomerServer.Count(m => m.UserId == activity.From.Id) < 1 && db.Admin.Count(m => m.UserId == activity.From.Id) < 1 && db.Customer.Count(m => m.UserId == activity.From.Id) < 1)
                     {
                         db.Customer.Add(new Customer(activity.Conversation.Id, activity.From.Id, activity.From.Name, activity.Recipient.Name, activity.Recipient.Id, activity.ServiceUrl));
+                        db.CustomerMessage.Add(new CustomerMessage { CustomerId = activity.From.Id, FromId = activity.Recipient.Id, Text = InnerData.dic["0"], timestamp = DateTime.UtcNow.Ticks });
                         db.SaveChanges();
                     }
                     //switch to 3 workflows(customer/customerService/adminservice)
@@ -85,8 +86,6 @@ namespace Bot_ApplicationDemo.ApiControllers
                         await Conversation.SendAsync(activity, () => new AdminServiceDialog());
                     }
                 }
-
-
             }
             else
             {
@@ -103,21 +102,7 @@ namespace Bot_ApplicationDemo.ApiControllers
             }
             else if (message.Type == ActivityTypes.ConversationUpdate)
             {
-                if (message.MembersAdded?.Count() > 0 && message.MembersAdded.Count(m => !m.Name.ToLower().Contains("bot")) > 0)
-                {
-                    using (var db = new BotdbUtil())
-                    {
-                        if (db.Customer.Count(m => m.UserId == message.From.Id) > 0)
-                        {
-                            db.CustomerMessage.Add(new CustomerMessage { CustomerId = message.From.Id, FromId = message.From.Id, Text = message.Text, timestamp = message.Timestamp.Value.Ticks });
-                            db.SaveChanges();
-                            ConnectorClient connector = new ConnectorClient(new Uri(message.ServiceUrl));
-                            var result = message.CreateReply(InnerData.dic["0"]);
-                            await connector.Conversations.ReplyToActivityAsync(result);
-                        }
-                    }
 
-                }
             }
             else if (message.Type == ActivityTypes.ContactRelationUpdate)
             {
