@@ -209,6 +209,7 @@
     <Compile Include="model\Customer.cs" />
     <Compile Include="model\CustomerServer.cs" />
     <Compile Include="model\InnerData.cs" />
+    <Compile Include="model\WebChatToken.cs" />
     <Compile Include="model\WeChatMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\BotdbUtil.cs" />
