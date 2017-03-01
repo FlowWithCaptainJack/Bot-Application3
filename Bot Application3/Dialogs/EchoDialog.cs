@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Bot_Application3.model;
+using Bot.model;
+using Bot.Utilities;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
-namespace Bot_Application3.Dialogs
+namespace Bot.Dialogs
 {
     [Serializable]
     public class EchoDialog : BaseDialog
@@ -15,9 +16,15 @@ namespace Bot_Application3.Dialogs
         }
         public override async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
-            var message = await argument as Activity;
-            await context.PostAsync(InnerData.dic.ContainsKey(message.Text) ? InnerData.dic[message.Text] : message.Text);
-            context.Wait(MessageReceivedAsync);
+            var message = await argument as Microsoft.Bot.Connector.Activity;
+            string result = InnerData.dic.ContainsKey(message.Text) ? InnerData.dic[message.Text] : message.Text;
+            using (var db = new BotdbUtil())
+            {
+                db.CustomerMessage.Add(new CustomerMessage { CustomerId = message.From.Id, FromId = message.Recipient.Id, Text = result, timestamp = DateTime.UtcNow.Ticks });
+                db.SaveChanges();
+            }
+            await context.PostAsync(result);
+            context.Done(1);
         }
     }
 }
